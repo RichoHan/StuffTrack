@@ -216,64 +216,70 @@ public class DeviceControlActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                displayGattServices(mBluetoothLeService.getSupportedGattServices());
-                BluetoothGattCharacteristic characteristic;
-                int charaProp;
+                mRssi.setText(""+mBluetoothLeService.writeCharacteristic(mBluetoothLeService.UUID_SERVICE, mBluetoothLeService.UUID_CHARACTERISTIC));
+//                mBluetoothLeService.writeCharacteristic(mBluetoothLeService.UUID_SERVICE, mBluetoothLeService.UUID_CHARACTERISTIC);
 
-                outerloop:
-                for (int i=0;i<mGattCharacteristics.size();i++){
-                    for(int j=0;j<mGattCharacteristics.get(i).size();j++){
-                        characteristic = mGattCharacteristics.get(i).get(j);
-                        charaProp = characteristic.getProperties();
-                        if (((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE)) > 0) {
-                            mWriteCharacteristic = characteristic;
-                            break outerloop;
-                        }
-                    }
-                }
+//                displayGattServices(mBluetoothLeService.getSupportedGattServices());
 
-                // write characterist here.
-                String str = "Write to BLE";
+//                mRssi.setText(""+mBluetoothLeService);
 
-                //mWriteCharactristc.
-                byte[] strBytes = str.getBytes();
+//                BluetoothGattCharacteristic characteristic;
+//                int charaProp;
+//
+//                outerloop:
+//                for (int i=0;i<mGattCharacteristics.size();i++){
+//                    for(int j=0;j<mGattCharacteristics.get(i).size();j++){
+//                        characteristic = mGattCharacteristics.get(i).get(j);
+//                        charaProp = characteristic.getProperties();
+//                        if (((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE)) > 0) {
+//                            mWriteCharacteristic = characteristic;
+//                            break outerloop;
+//                        }
+//                    }
+//                }
 
-                byte[] bytes = null;
-                if(mWriteCharacteristic==null) {
-                    return;
-                } else {
-                    bytes = DeviceControlActivity.this.mWriteCharacteristic.getValue();
-                }
-
-                //mWriteCharacteristic.
-                if (strBytes == null) {
-                    Log.w("","Cannot get Value from EditText Widget");
-                    return;
-                }
-
-                if (bytes == null) {
-                    // maybe just write a byte into GATT
-                    Log.w("","Cannot get Values from mWriteCharacteristic.");
+//                // write characterist here.
+//                String str = "Write to BLE";
+//
+//                //mWriteCharactristc.
+//                byte[] strBytes = str.getBytes();
+//
+//                byte[] bytes = null;
+//                if(mWriteCharacteristic==null) {
 //                    return;
-                    bytes = new byte[] {0};
-                } else if (bytes.length <= strBytes.length) {
-                    for(int i = 0; i < bytes.length; i++) {
-                        bytes[i] = strBytes[i];
-                    }
-                } else {
-                    for (int i = 0; i < strBytes.length; i++) {
-                        bytes[i] = strBytes[i];
-                    }
-                }
+//                } else {
+//                    bytes = DeviceControlActivity.this.mWriteCharacteristic.getValue();
+//                }
+//
+//                //mWriteCharacteristic.
+//                if (strBytes == null) {
+//                    Log.w("","Cannot get Value from EditText Widget");
+//                    return;
+//                }
 
-                DeviceControlActivity.this.mWriteCharacteristic.setValue(bytes);
-                DeviceControlActivity.this.writeCharacteristic(
-                        DeviceControlActivity.this.mWriteCharacteristic
-                );
-
-                mRssi.setText(str);
-
-                return;
+//                if (bytes == null) {
+//                    // maybe just write a byte into GATT
+//                    Log.w("","Cannot get Values from mWriteCharacteristic.");
+//                    return;
+//                    bytes = new byte[] {0};
+//                } else if (bytes.length <= strBytes.length) {
+//                    for(int i = 0; i < bytes.length; i++) {
+//                        bytes[i] = strBytes[i];
+//                    }
+//                } else {
+//                    for (int i = 0; i < strBytes.length; i++) {
+//                        bytes[i] = strBytes[i];
+//                    }
+//                }
+//
+//                DeviceControlActivity.this.mWriteCharacteristic.setValue(bytes);
+//                DeviceControlActivity.this.writeCharacteristic(
+//                        DeviceControlActivity.this.mWriteCharacteristic
+//                );
+//
+//                mRssi.setText(str);
+//
+//                return;
             }
         });
 
@@ -435,11 +441,11 @@ public class DeviceControlActivity extends Activity {
     }
 
 //    Richo
-    private void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
-        if (mBluetoothLeService != null) {
-            mBluetoothLeService.writeCharacteristic(characteristic);
-        }
-    }
+//    private void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
+//        if (mBluetoothLeService != null) {
+//            mBluetoothLeService.writeCharacteristic();
+//        }
+//    }
 
 
 }

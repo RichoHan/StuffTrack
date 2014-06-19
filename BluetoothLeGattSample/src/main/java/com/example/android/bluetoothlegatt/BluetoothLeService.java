@@ -49,8 +49,6 @@ import java.util.UUID;
 public class BluetoothLeService extends Service {
     private final static String TAG = BluetoothLeService.class.getSimpleName();
 
-    private final CountDownLatch loginLatch = new CountDownLatch (1);
-    private boolean callbackResults;
     private int rssi_val = 0;
 
     private BluetoothManager mBluetoothManager;
@@ -76,6 +74,11 @@ public class BluetoothLeService extends Service {
 
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
+
+    public final static UUID UUID_SERVICE =
+            UUID.fromString("0000fdf0-0000-1000-8000-00805f9b34fb");
+    public final static UUID UUID_CHARACTERISTIC =
+            UUID.fromString("00001802-0000-1000-8000-00805f9b34fb");
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -356,13 +359,18 @@ public class BluetoothLeService extends Service {
      * asynchronously through the {@code BluetoothGattCallback#onCharacteristicWrite(andorid.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
      * callback.
      */
-    public void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w("writeCharacteristic","BluetoothAdapter not initialized");
-            return;
-        }
-        Log.d("writeCharacteristic","#####Writing...#####");
-        mBluetoothGatt.writeCharacteristic(characteristic);
+    public List<BluetoothGattCharacteristic> writeCharacteristic(UUID s_UUIC, UUID c_UUID) {
+//        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+//            Log.w("writeCharacteristic","BluetoothAdapter not initialized");
+//            return;
+//        }
+//        Log.d("writeCharacteristic","#####Writing...#####");
+//        mBluetoothGatt.writeCharacteristic(characteristic);
+
+        BluetoothGattService mService = mBluetoothGatt.getService(s_UUIC);
+//        BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(c_UUID);
+//        mCharacteristic.setValue(new byte[] {0});
+        return mService.getCharacteristics();
     }
 
 
