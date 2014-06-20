@@ -76,9 +76,11 @@ public class BluetoothLeService extends Service {
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
     public final static UUID UUID_SERVICE =
-            UUID.fromString("0000fdf0-0000-1000-8000-00805f9b34fb");
+            UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
     public final static UUID UUID_CHARACTERISTIC =
-            UUID.fromString("00001802-0000-1000-8000-00805f9b34fb");
+            UUID.fromString("0000fff1-0000-1000-8000-00805f9b34fb");
+    public final static boolean ON = true;
+    public final static boolean OFF = false;
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -121,6 +123,25 @@ public class BluetoothLeService extends Service {
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            }
+        }
+
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt,
+                                         BluetoothGattCharacteristic characteristic,
+                                         int status) {
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                //broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+              Log.d("onCharacteristicWrite","#####GATT_SUCCESS#####");
+            } else if (status == BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH) {
+                //broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                Log.d("onCharacteristicWrite","#####GATT_INVALID_ATTRIBUTE_LENGTH#####");
+            } else if (status == BluetoothGatt.GATT_WRITE_NOT_PERMITTED) {
+                //broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                Log.d("onCharacteristicWrite","#####GATT_WRITE_NOT_PERMITTED#####");
+            } else if (status == BluetoothGatt.GATT_FAILURE) {
+                //broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                Log.d("onCharacteristicWrite","#####GATT_FAILURE#####");
             }
         }
 
@@ -359,18 +380,19 @@ public class BluetoothLeService extends Service {
      * asynchronously through the {@code BluetoothGattCallback#onCharacteristicWrite(andorid.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
      * callback.
      */
-    public List<BluetoothGattCharacteristic> writeCharacteristic(UUID s_UUIC, UUID c_UUID) {
-//        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-//            Log.w("writeCharacteristic","BluetoothAdapter not initialized");
-//            return;
-//        }
-//        Log.d("writeCharacteristic","#####Writing...#####");
-//        mBluetoothGatt.writeCharacteristic(characteristic);
+    public void writeCharacteristic(UUID s_UUIC, UUID c_UUID, boolean onoff) {
 
         BluetoothGattService mService = mBluetoothGatt.getService(s_UUIC);
-//        BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(c_UUID);
-//        mCharacteristic.setValue(new byte[] {0});
-        return mService.getCharacteristics();
+        BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(c_UUID);
+
+        if(onoff)
+            mCharacteristic.setValue(new byte[] {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01});
+        else
+            mCharacteristic.setValue(new byte[] {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
+
+        mBluetoothGatt.writeCharacteristic(mCharacteristic);
+
+//        return b;
     }
 
 

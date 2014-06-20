@@ -61,7 +61,7 @@
             <file
                 path="/Users/Richo/Documents/workspace/BluetoothLeGatt/BluetoothLeGattSample/src/main/res/values/base-strings.xml"
                 qualifiers="" >
-                <string name="app_name" >BluetoothLeGatt
+                <string name="app_name" >StuffTrack
                 </string>
                 <string name="intro_message" >
 <![CDATA[
@@ -107,9 +107,9 @@
                 </string>
                 <string name="rssi_default" >NAN
                 </string>
-                <string name="menu_scan" >Scan
-                </string>
                 <string name="error_bluetooth_not_supported" >Bluetooth not supported.
+                </string>
+                <string name="menu_scan" >Scan
                 </string>
                 <string name="menu_stop" >Stop
                 </string>
@@ -121,9 +121,9 @@
                 </dimen>
                 <dimen name="margin_tiny" >4dp
                 </dimen>
-                <dimen name="horizontal_page_margin" >@dimen/margin_medium
-                </dimen>
                 <dimen name="margin_large" >32dp
+                </dimen>
+                <dimen name="horizontal_page_margin" >@dimen/margin_medium
                 </dimen>
                 <dimen name="margin_medium" >16dp
                 </dimen>
@@ -169,6 +169,51 @@
                 <style
                     name="Theme.Sample"
                     parent="Theme.Base" />
+
+                <style name="button_text" >
+                    <item name="android:layout_width">
+fill_parent
+                    </item>
+                    <item name="android:layout_height">
+wrap_content
+                    </item>
+                    <item name="android:textColor">
+#ffffff
+                    </item>
+                    <item name="android:gravity">
+center
+                    </item>
+                    <item name="android:layout_margin">
+3dp
+                    </item>
+                    <item name="android:textSize">
+30dp
+                    </item>
+                    <item name="android:textStyle">
+bold
+                    </item>
+                    <item name="android:shadowColor">
+#000000
+                    </item>
+                    <item name="android:shadowDx">
+1
+                    </item>
+                    <item name="android:shadowDy">
+1
+                    </item>
+                    <item name="android:shadowRadius">
+2
+                    </item>
+                </style>
+
+                <style name="info_text" >
+                    <item name="android:textAppearance">
+?android:textAppearanceMedium
+                    </item>
+                    <item name="android:lineSpacingMultiplier">
+1.1
+                    </item>
+                </style>
 
                 <style
                     name="AppTheme"

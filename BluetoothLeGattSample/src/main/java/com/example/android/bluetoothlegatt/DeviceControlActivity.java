@@ -27,6 +27,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,10 +36,26 @@ import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+//import android.app.AlarmManager;
+//import android.content.BroadcastReceiver;
+//import android.app.PendingIntent;
+//import android.content.Context;
+//import android.content.Intent;
+
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
+import android.app.TaskStackBuilder;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.graphics.Color;
 
 /**
  * For a given BLE device, this Activity provides the user interface to connect, display data,
@@ -49,13 +66,28 @@ import java.util.List;
 public class DeviceControlActivity extends Activity {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
+//    private AlarmManager alarmMgr;
+//    private PendingIntent alarmIntent;
+//    private Context context;
+
+    private NotificationManager myNotificationManager;
+    	   private int notificationIdOne = 111;
+    	   private int notificationIdTwo = 112;
+    	   private int numMessagesOne = 0;
+       private int numMessagesTwo = 0;
+    private Thread rssr_update;
+
+
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
     private TextView mConnectionState;
     private TextView mDataField;
+    private TextView mBuzzer;
     private TextView mRssi;
+    private LinearLayout mDataView;
     private Button mSearchButton;
+    private Button mBuzzStopButton;
     private String mDeviceName;
     private String mDeviceAddress;
     private ExpandableListView mGattServicesList;
@@ -82,28 +114,13 @@ public class DeviceControlActivity extends Activity {
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-            // Automatically connects to the device upon successful start-up initialization.
-//            mBluetoothLeService.connect(mDeviceAddress);
-//            mRssi = (TextView) findViewById(R.id.data_rssi);
-//            mSearchButton = (Button)findViewById(R.id.search_btn);
-//            mSearchButton.setOnClickListener(new Button.OnClickListener(){
-//                @Override
-//                public void onClick(View v) {
-//                    Log.i("onClick","Searching...");
-////                    mBluetoothLeService.setRssi(5);
-//                    try {
-//                        mRssi.setText("rssi = " + mBluetoothLeService.getRssi());
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
 
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             Log.i("onServiceDisconnected","#####onServiceDisconnected#####");
+
             mBluetoothLeService = null;
         }
     };
@@ -124,11 +141,16 @@ public class DeviceControlActivity extends Activity {
                 updateConnectionState(R.string.connected);
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+
+                rssr_update.interrupt();
                 Log.i("mGattUpdateReceiver","#####Disconnected#####");
                 mConnected = false;
                 updateConnectionState(R.string.disconnected);
                 invalidateOptionsMenu();
                 clearUI();
+                mRssi.setText("Device disconnected!");
+                displayNotificationOne();
+
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 displayGattServices(mBluetoothLeService.getSupportedGattServices());
@@ -199,9 +221,12 @@ public class DeviceControlActivity extends Activity {
         // Sets up UI references.
         ((TextView) findViewById(R.id.device_address)).setText(mDeviceAddress);
         mGattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
+        mGattServicesList.setVisibility(View.INVISIBLE);
         mGattServicesList.setOnChildClickListener(servicesListClickListner);
         mConnectionState = (TextView) findViewById(R.id.connection_state);
         mDataField = (TextView) findViewById(R.id.data_value);
+        mDataView = (LinearLayout) findViewById(R.id.data);
+        mDataView.setVisibility(View.INVISIBLE);
 
         getActionBar().setTitle(mDeviceName);
         getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -210,100 +235,50 @@ public class DeviceControlActivity extends Activity {
 
 //        Richo
         mRssi = (TextView) findViewById(R.id.data_rssi);
+        mBuzzer = (TextView) findViewById(R.id.data_buzzer);
 
         mSearchButton = (Button)findViewById(R.id.search_btn);
         mSearchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                mRssi.setText(""+mBluetoothLeService.writeCharacteristic(mBluetoothLeService.UUID_SERVICE, mBluetoothLeService.UUID_CHARACTERISTIC));
-//                mBluetoothLeService.writeCharacteristic(mBluetoothLeService.UUID_SERVICE, mBluetoothLeService.UUID_CHARACTERISTIC);
-
-//                displayGattServices(mBluetoothLeService.getSupportedGattServices());
-
-//                mRssi.setText(""+mBluetoothLeService);
-
-//                BluetoothGattCharacteristic characteristic;
-//                int charaProp;
-//
-//                outerloop:
-//                for (int i=0;i<mGattCharacteristics.size();i++){
-//                    for(int j=0;j<mGattCharacteristics.get(i).size();j++){
-//                        characteristic = mGattCharacteristics.get(i).get(j);
-//                        charaProp = characteristic.getProperties();
-//                        if (((charaProp & BluetoothGattCharacteristic.PROPERTY_WRITE)) > 0) {
-//                            mWriteCharacteristic = characteristic;
-//                            break outerloop;
-//                        }
-//                    }
-//                }
-
-//                // write characterist here.
-//                String str = "Write to BLE";
-//
-//                //mWriteCharactristc.
-//                byte[] strBytes = str.getBytes();
-//
-//                byte[] bytes = null;
-//                if(mWriteCharacteristic==null) {
-//                    return;
-//                } else {
-//                    bytes = DeviceControlActivity.this.mWriteCharacteristic.getValue();
-//                }
-//
-//                //mWriteCharacteristic.
-//                if (strBytes == null) {
-//                    Log.w("","Cannot get Value from EditText Widget");
-//                    return;
-//                }
-
-//                if (bytes == null) {
-//                    // maybe just write a byte into GATT
-//                    Log.w("","Cannot get Values from mWriteCharacteristic.");
-//                    return;
-//                    bytes = new byte[] {0};
-//                } else if (bytes.length <= strBytes.length) {
-//                    for(int i = 0; i < bytes.length; i++) {
-//                        bytes[i] = strBytes[i];
-//                    }
-//                } else {
-//                    for (int i = 0; i < strBytes.length; i++) {
-//                        bytes[i] = strBytes[i];
-//                    }
-//                }
-//
-//                DeviceControlActivity.this.mWriteCharacteristic.setValue(bytes);
-//                DeviceControlActivity.this.writeCharacteristic(
-//                        DeviceControlActivity.this.mWriteCharacteristic
-//                );
-//
-//                mRssi.setText(str);
-//
-//                return;
+                mBluetoothLeService.writeCharacteristic(mBluetoothLeService.UUID_SERVICE, mBluetoothLeService.UUID_CHARACTERISTIC, mBluetoothLeService.ON);
+                mBuzzer.setText("Buzzer On!");
             }
         });
 
-//        mRssi = (TextView) findViewById(R.id.data_rssi);
-//        Thread rssr_update = new Thread() {
-//            @Override
-//            public void run() {
-//                try {
-//                    while (!isInterrupted()) {
-//                        Thread.sleep(1000);
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mBluetoothLeService.connect(mDeviceAddress);
-//                                mRssi.setText("rssi = " + mBluetoothLeService.getRssi());
-//                            }
-//                        });
-//                    }
-//                } catch (InterruptedException e) {
-//                }
-//            }
-//        };
+        mBuzzStopButton = (Button)findViewById(R.id.buzz_stop_btn);
+        mBuzzStopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBluetoothLeService.writeCharacteristic(mBluetoothLeService.UUID_SERVICE, mBluetoothLeService.UUID_CHARACTERISTIC, mBluetoothLeService.OFF);
+                mBuzzer.setText("Buzzer Off!");
+            }
+        });
 
-//        rssr_update.start();
+        mRssi = (TextView) findViewById(R.id.data_rssi);
+        rssr_update = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mBluetoothLeService.connect(mDeviceAddress);
+                                int R = mBluetoothLeService.getRssi();
+                                mRssi.setText("rssi = " + R);
+                                if(R!=-1)
+                                    mRssi.setBackgroundColor(Color.argb(R*(-2),255,0,0));
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        rssr_update.start();
 
     }
 
@@ -415,6 +390,7 @@ public class DeviceControlActivity extends Activity {
             }
             mGattCharacteristics.add(charas);
             gattCharacteristicData.add(gattCharacteristicGroupData);
+
         }
 
         SimpleExpandableListAdapter gattServiceAdapter = new SimpleExpandableListAdapter(
@@ -441,11 +417,46 @@ public class DeviceControlActivity extends Activity {
     }
 
 //    Richo
-//    private void writeCharacteristic(BluetoothGattCharacteristic characteristic) {
-//        if (mBluetoothLeService != null) {
-//            mBluetoothLeService.writeCharacteristic();
-//        }
-//    }
+protected void displayNotificationOne() {
+
+    	      // Invoking the default notification service
+              Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+    	      NotificationCompat.Builder  mBuilder = new NotificationCompat.Builder(this);
+
+    	      mBuilder.setContentTitle("Warning!!!");
+    	      mBuilder.setContentText("Your item has been away from you!");
+    	      mBuilder.setTicker("StuffTrack: Notification!");
+    	      mBuilder.setSmallIcon(R.drawable.ic_launcher);
+              mBuilder.setSound(alarmSound);
+
+    	      // Increase notification number every time a new notification arrives
+    	      mBuilder.setNumber(++numMessagesOne);
+
+    	      // Creates an explicit intent for an Activity in your app
+    	      Intent resultIntent = new Intent(this, DeviceControlActivity.class);
+    	      resultIntent.putExtra("notificationId", notificationIdOne);
+
+    	      //This ensures that navigating backward from the Activity leads out of the app to Home page
+    	      TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+
+    	      // Adds the back stack for the Intent
+    	      stackBuilder.addParentStack(DeviceControlActivity.class);
+
+    	      // Adds the Intent that starts the Activity to the top of the stack
+    	      stackBuilder.addNextIntent(resultIntent);
+    	      PendingIntent resultPendingIntent =
+            	         stackBuilder.getPendingIntent(
+            	            0,
+            	            PendingIntent.FLAG_ONE_SHOT //can only be used once
+            	         );
+    	      // start the activity when the user clicks the notification text
+    	      mBuilder.setContentIntent(resultPendingIntent);
+
+    	      myNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+    	      // pass the Notification object to the system
+    	      myNotificationManager.notify(notificationIdOne, mBuilder.build());
+    	   }
 
 
 }
